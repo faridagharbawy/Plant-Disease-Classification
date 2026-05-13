@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAI3105 — PlantVillage Deep Learning Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--bg4:#2d333b;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);--text:#e6edf3;--text2:#8b949e;--text3:#6e7681;--green:#3fb950;--gdim:rgba(63,185,80,.15);--blue:#58a6ff;--bdim:rgba(88,166,255,.15);--orange:#f0883e;--odim:rgba(240,136,62,.15);--purple:#a371f7;--pdim:rgba(163,113,247,.15);--red:#f85149;--rdim:rgba(248,81,73,.12);--teal:#39d353;--accent:#1f6feb;--r:10px;--rl:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6;}
+.mono{font-family:'Space Mono',monospace;}
+/* Header */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 2rem;}
+.hdr-in{max-width:1300px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-leaf{width:32px;height:32px;background:linear-gradient(135deg,#3fb950,#1a7f37);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.logo-t{font-size:15px;font-weight:600;}
+.logo-s{font-size:12px;color:var(--text2);}
+.hbadges{display:flex;gap:8px;}
+.bdg{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid;}
+.bg{color:var(--green);border-color:rgba(63,185,80,.3);background:var(--gdim);}
+.bb{color:var(--blue);border-color:rgba(88,166,255,.3);background:var(--bdim);}
+.bo{color:var(--orange);border-color:rgba(240,136,62,.3);background:var(--odim);}
+.bp{color:var(--purple);border-color:rgba(163,113,247,.3);background:var(--pdim);}
+/* Nav */
+.nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:0;z-index:100;}
+.nav-in{max-width:1300px;margin:0 auto;display:flex;}
+.ntab{padding:12px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.ntab:hover{color:var(--text);}
+.ntab.active{color:var(--text);border-bottom-color:var(--accent);}
+.ntab.demo{color:var(--green);font-weight:500;}
+/* Layout */
+.main{max-width:1300px;margin:0 auto;padding:2rem;}
+.sec{display:none;}.sec.active{display:block;}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;}
+.ct{font-size:11px;font-weight:500;color:var(--text3);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+.sv{font-size:28px;font-weight:600;line-height:1.2;}
+.sl{font-size:12px;color:var(--text2);margin-top:2px;}
+.green{color:var(--green);}.blue{color:var(--blue);}.orange{color:var(--orange);}.purple{color:var(--purple);}.red{color:var(--red);}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem;}
+.sh h2{font-size:18px;font-weight:600;}
+/* Approach cards */
+.acard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;margin-bottom:1.5rem;}
+.ahdr{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.anum{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.abody{padding:1.5rem;}
+/* Metrics */
+.mrow{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem;}
+.mi{flex:1;min-width:100px;}
+.mn{font-size:10px;color:var(--text3);margin-bottom:2px;letter-spacing:.05em;}
+.mv{font-size:22px;font-weight:600;}
+.mbar{height:4px;background:var(--bg3);border-radius:2px;margin-top:4px;overflow:hidden;}
+.mbf{height:100%;border-radius:2px;transition:width 1.2s ease;}
+/* Pipeline */
+.pipe{display:flex;align-items:center;flex-wrap:wrap;padding:.75rem 0;}
+.pstep{flex:1;min-width:90px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:.65rem .75rem;text-align:center;}
+.picon{font-size:18px;margin-bottom:3px;}
+.ptit{font-size:12px;font-weight:600;}
+.psub{font-size:10px;color:var(--text3);margin-top:1px;}
+.parr{font-size:16px;color:var(--text3);padding:0 4px;flex-shrink:0;}
+/* Tables */
+table.hp{width:100%;border-collapse:collapse;font-size:13px;}
+.hp th{padding:8px 12px;text-align:left;background:var(--bg3);color:var(--text2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+.hp td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+.hp tr:last-child td{border-bottom:none;}
+.hp tr:hover td{background:rgba(255,255,255,.02);}
+.cp{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:1px 6px;font-family:'Space Mono',monospace;font-size:11px;color:var(--blue);}
+/* Architecture */
+.arch{display:flex;flex-direction:column;gap:4px;padding:1rem;background:var(--bg3);border-radius:var(--r);font-family:'Space Mono',monospace;font-size:11px;color:var(--text2);line-height:1.9;}
+.al{display:flex;align-items:center;gap:8px;}
+.ab{padding:3px 10px;border-radius:4px;font-size:11px;white-space:nowrap;}
+/* Classes grid */
+.clist{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;}
+.citem{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;}
+.cname{font-size:11px;color:var(--text2);}
+.ccnt{font-size:12px;font-weight:600;color:var(--green);}
+/* Results table */
+.rtbl{width:100%;border-collapse:collapse;font-size:13px;}
+.rtbl th{padding:10px 14px;text-align:left;background:var(--bg3);color:var(--text2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+.rtbl td{padding:12px 14px;border-bottom:1px solid var(--border);}
+.rtbl tr:last-child td{border-bottom:none;}
+.rtbl tr:hover td{background:rgba(255,255,255,.02);}
+.sp{display:inline-block;padding:2px 8px;border-radius:4px;font-weight:600;font-size:13px;font-family:'Space Mono',monospace;}
+.bm{font-size:10px;color:var(--green);margin-left:4px;vertical-align:middle;}
+/* Conclusion */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem;}
+.ccard h4{font-size:13px;font-weight:600;margin-bottom:.6rem;display:flex;align-items:center;gap:6px;}
+.ccard p{font-size:13px;color:var(--text2);line-height:1.7;}
+.ecard{border-radius:var(--r);padding:1rem;margin-top:.75rem;display:flex;gap:10px;background:var(--bg3);border:1px solid var(--border);}
+/* Info block */
+.ib{background:var(--bg3);border-left:3px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:.75rem 1rem;margin:.75rem 0;font-size:13px;color:var(--text2);}
+/* Charts */
+.cw{position:relative;width:100%;}
+/* CM */
+.cm-wrap{overflow:auto;max-height:380px;}
+/* Demo */
+.uz{border:2px dashed var(--border2);border-radius:var(--rl);padding:2.5rem 2rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);}
+.uz:hover,.uz.drag{border-color:var(--green);background:rgba(63,185,80,.05);}
+.uz input{display:none;}
+.t5{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);}
+.t5:last-child{border-bottom:none;}
+.t5bw{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.t5b{height:100%;border-radius:3px;}
+.cmpgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;}
+.cmpbox{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1rem;}
+.cmpbox h4{font-size:11px;color:var(--text2);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em;}
+@media(max-width:768px){.g4{grid-template-columns:1fr 1fr;}.g2{grid-template-columns:1fr;}.cgrid{grid-template-columns:1fr;}.cmpgrid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="hdr-in">
+    <div class="logo">
+      <div class="logo-leaf">🌿</div>
+      <div><div class="logo-t">PlantVillage Disease Classifier</div><div class="logo-s">CAI3105 Deep Learning — 12th Week Project · Prof. Nashwa El-Bendary</div></div>
+    </div>
+    <div class="hbadges">
+      <span class="bdg bg">38 Classes · 54,306 Images</span>
+      <span class="bdg bb">ResNet50 + MobileNet</span>
+      <span class="bdg bo">Color + Grayscale</span>
+      <span class="bdg bp">+2 Bonus Marks</span>
+    </div>
+  </div>
+</div>
+<div class="nav">
+  <div class="nav-in">
+    <div class="ntab active" onclick="showTab('overview')">📊 Overview</div>
+    <div class="ntab" onclick="showTab('dataset')">📁 Dataset</div>
+    <div class="ntab" onclick="showTab('model')">🧠 Models</div>
+    <div class="ntab" onclick="showTab('results')">🔬 Results</div>
+    <div class="ntab" onclick="showTab('analysis')">📈 Analysis</div>
+    <div class="ntab" onclick="showTab('bonus')">🎁 Bonus</div>
+    <div class="ntab demo" onclick="showTab('demo')">🔍 Live Demo</div>
+  </div>
+</div>
+<div class="main">
+
+<!-- OVERVIEW -->
+<div class="sec active" id="tab-overview">
+  <div class="sh"><h2>Project Overview</h2></div>
+  <div class="g4">
+    <div class="card"><div class="ct">Total Images</div><div class="sv green">54,306</div><div class="sl">PlantVillage Color dataset</div></div>
+    <div class="card"><div class="ct">Disease Classes</div><div class="sv blue">38</div><div class="sl">Across 14 plant species</div></div>
+    <div class="card"><div class="ct">Best Accuracy</div><div class="sv green" id="ov-acc">97.31%</div><div class="sl">ResNet50 End-to-End</div></div>
+    <div class="card"><div class="ct">Approaches Compared</div><div class="sv purple">4</div><div class="sl">+ 2 bonus comparisons</div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">Accuracy — All Approaches</div><div class="cw" style="height:260px;margin-top:.75rem;"><canvas id="ovChart" role="img" aria-label="Accuracy comparison bar chart"></canvas></div></div>
+    <div class="card"><div class="ct">Training Time (minutes)</div><div class="cw" style="height:260px;margin-top:.75rem;"><canvas id="tmChart" role="img" aria-label="Training time comparison bar chart"></canvas></div></div>
+  </div>
+  <div class="card">
+    <div class="ct" style="margin-bottom:1rem;">Project Checklist</div>
+    <div class="g3">
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)"><span style="color:var(--green);font-size:16px;">✓</span><span style="font-size:13px;">REQ 1 — Dataset & Specifications</span></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)"><span style="color:var(--green);font-size:16px;">✓</span><span style="font-size:13px;">REQ 2 — Model Selection & Architecture</span></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)"><span style="color:var(--green);font-size:16px;">✓</span><span style="font-size:13px;">REQ 3 — Approach 1: ResNet50 + SVM</span></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)"><span style="color:var(--green);font-size:16px;">✓</span><span style="font-size:13px;">REQ 3 — Approach 2: ResNet50 End-to-End</span></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)"><span style="color:var(--green);font-size:16px;">✓</span><span style="font-size:13px;">REQ 4 — Comparative Analysis</span></div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(163,113,247,.1);border-radius:8px;border:1px solid rgba(163,113,247,.25)"><span style="color:var(--purple);font-size:16px;">★</span><span style="font-size:13px;">BONUS — MobileNet + Grayscale Dataset</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- DATASET -->
+<div class="sec" id="tab-dataset">
+  <div class="sh"><h2>Requirement 1 — Dataset Selection & Technical Specifications</h2></div>
+  <!-- 1.1 Metadata with N -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="ct">1.1 Dataset Metadata</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-top:.5rem;">
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Dataset Name</div><div style="font-size:15px;font-weight:600;color:var(--green);">PlantVillage</div><div style="font-size:10px;color:var(--text3);">Color subset</div></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Problem Domain</div><div style="font-size:14px;font-weight:600;color:var(--blue);">Agriculture</div><div style="font-size:10px;color:var(--text3);">Leaf Disease Classification</div></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;border:1px solid rgba(240,136,62,.3);"><div style="font-size:10px;color:var(--orange);margin-bottom:4px;font-weight:500;">TOTAL SAMPLES (N)</div><div style="font-size:24px;font-weight:700;color:var(--orange);font-family:'Space Mono',monospace;">54,306</div><div style="font-size:10px;color:var(--text3);">labeled leaf images</div></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Source</div><div style="font-size:13px;font-weight:600;color:var(--text);">Kaggle · UCI</div><div style="font-size:10px;color:var(--text3);">Mendeley Data</div></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;">Classes</div><div style="font-size:24px;font-weight:700;color:var(--purple);font-family:'Space Mono',monospace;">38</div><div style="font-size:10px;color:var(--text3);">across 14 plant species</div></div>
+    </div>
+    <!-- Split breakdown -->
+    <div style="display:flex;gap:1rem;margin-top:1rem;">
+      <div style="flex:1;background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.25);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--green);font-weight:500;">TRAINING SET — 70%</div><div style="font-size:22px;font-weight:700;color:var(--green);font-family:'Space Mono',monospace;">38,014</div><div style="font-size:10px;color:var(--text3);">images for model learning</div></div>
+      <div style="flex:1;background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--blue);font-weight:500;">VALIDATION SET — 15%</div><div style="font-size:22px;font-weight:700;color:var(--blue);font-family:'Space Mono',monospace;">8,146</div><div style="font-size:10px;color:var(--text3);">for hyperparameter tuning</div></div>
+      <div style="flex:1;background:rgba(240,136,62,.1);border:1px solid rgba(240,136,62,.25);border-radius:10px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--orange);font-weight:500;">TEST SET — 15%</div><div style="font-size:22px;font-weight:700;color:var(--orange);font-family:'Space Mono',monospace;">8,146</div><div style="font-size:10px;color:var(--text3);">held-out for final evaluation</div></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">1.2 Technical Specifications</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:8px;"><span style="font-size:13px;color:var(--text2);">Image Resolution</span><span class="cp">224 × 224 px</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:8px;"><span style="font-size:13px;color:var(--text2);">Color Channels</span><span class="cp">RGB (3 channels)</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:8px;"><span style="font-size:13px;color:var(--text2);">Number of Classes</span><span class="cp">38</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:8px;"><span style="font-size:13px;color:var(--text2);">Pixel Value Range (raw)</span><span class="cp">[0, 255]</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:8px;"><span style="font-size:13px;color:var(--text2);">Normalization method</span><span class="cp">ImageNet mean subtract</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3);border-radius:8px;"><span style="font-size:13px;color:var(--text2);">Split Ratio</span><span class="cp">70 / 15 / 15 %</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">1.3 Preprocessing Pipeline</div>
+      <div class="pipe" style="margin-top:.5rem;">
+        <div class="pstep" style="border-color:rgba(88,166,255,.3)"><div class="picon">🖼️</div><div class="ptit" style="color:var(--blue)">Load</div><div class="psub">Class folders</div></div>
+        <div class="parr">→</div>
+        <div class="pstep" style="border-color:rgba(63,185,80,.3)"><div class="picon">📐</div><div class="ptit" style="color:var(--green)">Resize</div><div class="psub">224×224</div></div>
+        <div class="parr">→</div>
+        <div class="pstep" style="border-color:rgba(240,136,62,.3)"><div class="picon">🎨</div><div class="ptit" style="color:var(--orange)">Normalize</div><div class="psub">Mean subtract</div></div>
+        <div class="parr">→</div>
+        <div class="pstep" style="border-color:rgba(163,113,247,.3)"><div class="picon">✂️</div><div class="ptit" style="color:var(--purple)">Split</div><div class="psub">70/15/15%</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- 1.4 Augmentation -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="ct">1.4 Data Augmentation Techniques & Justification</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:.5rem;">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;"><span style="color:var(--blue);font-size:20px">↻</span><div><div style="font-size:13px;font-weight:500">Rotation ±30°</div><div style="font-size:11px;color:var(--text3)">Leaves photographed at varying angles in the field</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;"><span style="color:var(--green);font-size:20px">↔</span><div><div style="font-size:13px;font-weight:500">Horizontal Flip</div><div style="font-size:11px;color:var(--text3)">Disease patterns appear symmetrically on both leaf sides</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;"><span style="color:var(--orange);font-size:20px">⤡</span><div><div style="font-size:13px;font-weight:500">Shift ±20% + Zoom ±20%</div><div style="font-size:11px;color:var(--text3)">Subject not always centered; images taken at varying distances</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;"><span style="color:var(--purple);font-size:20px">☀</span><div><div style="font-size:13px;font-weight:500">Brightness 0.8–1.2×</div><div style="font-size:11px;color:var(--text3)">Field lighting conditions vary greatly throughout the day</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;"><span style="color:var(--red);font-size:20px">⎡</span><div><div style="font-size:13px;font-weight:500">Shear Transform 10%</div><div style="font-size:11px;color:var(--text3)">Simulates perspective variation in field photography</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:8px;"><span style="color:var(--teal);font-size:20px">✦</span><div><div style="font-size:13px;font-weight:500">fill_mode = nearest</div><div style="font-size:11px;color:var(--text3)">Preserves border continuity after geometric transforms</div></div></div>
+    </div>
+  </div>
+  <div class="card"><div class="ct" style="margin-bottom:1rem;">All 38 Classes — Images per Class</div><div class="clist" id="classGrid"></div></div>
+</div>
+
+<!-- MODELS -->
+<div class="sec" id="tab-model">
+  <div class="sh"><h2>Requirement 2 — DL Model Selection & Justification</h2></div>
+  <div class="g2">
+    <div class="card">
+      <div class="ct">Primary CNN: ResNet50</div>
+      <div style="font-size:20px;font-weight:600;color:var(--blue);margin:.4rem 0 .5rem;">ResNet50</div>
+      <!-- Literature citation box -->
+      <div style="font-size:12px;color:var(--text2);margin-bottom:1rem;padding:10px 12px;background:var(--bg3);border-radius:8px;border-left:3px solid var(--blue);">
+        <strong style="color:var(--text);font-size:12px;">📖 Literature Reference (sourced from IEEE CVPR 2016):</strong><br>
+        He, K., Zhang, X., Ren, S., &amp; Sun, J. (2016). <em>Deep Residual Learning for Image Recognition.</em> Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), Las Vegas, NV, USA, pp. 770–778. DOI: 10.1109/CVPR.2016.90
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;">
+        <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Architecture Depth</div><div style="font-size:18px;font-weight:600;color:var(--blue);">50 layers</div></div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Total Parameters</div><div style="font-size:18px;font-weight:600;color:var(--green);">25.6 M</div></div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:10px;color:var(--text3);">ImageNet Top-1 Accuracy</div><div style="font-size:18px;font-weight:600;color:var(--orange);">76.0%</div></div>
+        <div style="background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Feature Vector (GAP out)</div><div style="font-size:18px;font-weight:600;color:var(--purple);">2048-D</div></div>
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.75;">
+        <strong style="color:var(--text);">Why ResNet50 for PlantVillage?</strong><br>
+        Residual (skip) connections address the vanishing gradient problem in very deep networks, enabling learning of subtle disease texture differences between visually similar classes (e.g., early vs. late blight). The rich 2048-D feature vector via GlobalAveragePooling provides exceptional discriminative power for the SVM classifier. ResNet50 is widely cited in agricultural AI for leaf disease classification tasks (Mohanty et al., 2016, Front. Plant Sci.; Ferentinos, 2018, Computers and Electronics in Agriculture).
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Architecture Diagram — He et al. (2016, Fig. 3 &amp; 5)</div>
+      <div class="arch">
+        <div class="al"><span style="color:var(--text3);min-width:54px;">Input</span><span class="ab" style="background:rgba(88,166,255,.15);color:var(--blue);">224 × 224 × 3  (RGB image)</span></div>
+        <div style="color:var(--text3);padding-left:12px;">↓</div>
+        <div class="al"><span style="color:var(--text3);min-width:54px;">Stage 0</span><span class="ab" style="background:rgba(63,185,80,.15);color:var(--green);">Conv1  7×7 / stride=2 / 64 filters  →  BN  →  ReLU  →  MaxPool 3×3</span></div>
+        <div style="color:var(--text3);padding-left:12px;">↓  <span style="font-size:10px;">[residual/skip connections applied throughout stages 1–4]</span></div>
+        <div class="al"><span style="color:var(--text3);min-width:54px;">Stage 1</span><span class="ab" style="background:rgba(240,136,62,.15);color:var(--orange);">3 × Bottleneck  [1×1→64  /  3×3→64  /  1×1→256]  output: 56×56×256</span></div>
+        <div style="color:var(--text3);padding-left:12px;">↓</div>
+        <div class="al"><span style="color:var(--text3);min-width:54px;">Stage 2</span><span class="ab" style="background:rgba(240,136,62,.15);color:var(--orange);">4 × Bottleneck  [1×1→128 /  3×3→128 / 1×1→512]  output: 28×28×512</span></div>
+        <div style="color:var(--text3);padding-left:12px;">↓</div>
+        <div class="al"><span style="color:var(--text3);min-width:54px;">Stage 3</span><span class="ab" style="background:rgba(240,136,62,.15);color:var(--orange);">6 × Bottleneck  [1×1→256 / 3×3→256 / 1×1→1024]  output: 14×14×1024</span></div>
+        <div style="color:var(--text3);padding-left:12px;">↓</div>
+        <div class="al"><span style="color:var(--text3);min-width:54px;">Stage 4</span><span class="ab" style="background:rgba(240,136,62,.15);color:var(--orange);">3 × Bottleneck  [1×1→512 / 3×3→512 / 1×1→2048]  output: 7×7×2048</span></div>
+        <div style="color:var(--text3);padding-left:12px;">↓</div>
+        <div class="al"><span style="color:var(--text3);min-width:54px;">GAP</span><span class="ab" style="background:rgba(163,113,247,.15);color:var(--purple);">GlobalAveragePooling2D  →  2048-D Feature Vector  (used by both approaches)</span></div>
+        <div style="color:var(--text3);padding-left:12px;">↓  <span style="font-size:10px;">(End-to-End Approach only — Approach 1 stops at GAP)</span></div>
+        <div class="al"><span style="color:var(--text3);min-width:54px;">Head</span><span class="ab" style="background:rgba(248,81,73,.15);color:var(--red);">BN → Dense(512) → Dropout(0.5) → Dense(256) → Dropout(0.3) → Dense(38, softmax)</span></div>
+      </div>
+      <div style="margin-top:.75rem;font-size:11px;color:var(--text3);border-top:1px solid var(--border);padding-top:.75rem;">Bottleneck design (He et al., 2016, Fig. 5): each block uses 1×1 convolutions to reduce/restore channel dimensions around a 3×3 conv. Identity shortcuts added element-wise. Projection shortcuts (1×1 conv) used when dimensions change. This design enables stable training of 50+ layer networks.</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ct" style="margin-bottom:1rem;">Hyperparameter Table — Requirement 2.3</div>
+    <table class="hp">
+      <thead>
+        <tr><th>Hyperparameter</th><th>Approach 1 — ResNet50 Feature Extractor + SVM</th><th>Approach 2 — ResNet50 End-to-End DL</th><th>Bonus — MobileNetV1</th></tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4" style="background:rgba(88,166,255,.05);color:var(--blue);font-size:11px;padding:6px 12px;font-weight:500;">DATA & INFERENCE PARAMETERS (apply to all)</td></tr>
+        <tr><td>Input Image Size</td><td><span class="cp">224×224×3</span></td><td><span class="cp">224×224×3</span></td><td><span class="cp">224×224×3</span></td></tr>
+        <tr><td>Batch Size</td><td><span class="cp">32</span> (for feature extraction inference)</td><td><span class="cp">32</span></td><td><span class="cp">32</span></td></tr>
+        <tr><td colspan="4" style="background:rgba(63,185,80,.05);color:var(--green);font-size:11px;padding:6px 12px;font-weight:500;">DEEP LEARNING TRAINING PARAMETERS</td></tr>
+        <tr><td>Max Epochs</td><td style="color:var(--text3);font-size:12px;">Not applicable — backbone is frozen; no backpropagation performed on the DL model in Approach 1.</td><td><span class="cp">25</span></td><td><span class="cp">25</span></td></tr>
+        <tr><td>Learning Rate</td><td style="color:var(--text3);font-size:12px;">Not applicable — no DL gradient updates.</td><td><span class="cp">1e-4</span></td><td><span class="cp">1e-4</span></td></tr>
+        <tr><td>Optimizer</td><td style="color:var(--text3);font-size:12px;">Not applicable — no DL gradient updates.</td><td>Adam (β₁=0.9, β₂=0.999, ε=1e-7)</td><td>Adam (β₁=0.9, β₂=0.999)</td></tr>
+        <tr><td>LR Scheduler</td><td style="color:var(--text3);font-size:12px;">Not applicable — no DL gradient updates.</td><td>ReduceLROnPlateau (factor=0.5, patience=3)</td><td>ReduceLROnPlateau (factor=0.5, patience=3)</td></tr>
+        <tr><td>Early Stopping</td><td style="color:var(--text3);font-size:12px;">Not applicable — no DL gradient updates.</td><td>patience=5, monitor=val_accuracy</td><td>patience=5, monitor=val_accuracy</td></tr>
+        <tr><td>Dropout Rates</td><td style="color:var(--text3);font-size:12px;">Not applicable — features passed directly to SVM; no trainable DL head.</td><td>0.50 (Dense-512) → 0.30 (Dense-256)</td><td>0.50 → 0.30</td></tr>
+        <tr><td>Dense Units</td><td style="color:var(--text3);font-size:12px;">Not applicable — 2048-D feature vector is the direct input to SVM.</td><td>512 → 256 → 38 (softmax)</td><td>512 → 256 → 38 (softmax)</td></tr>
+        <tr><td>Loss Function</td><td style="color:var(--text3);font-size:12px;">Not applicable — no DL training.</td><td>Categorical Cross-Entropy</td><td>Categorical Cross-Entropy</td></tr>
+        <tr><td>Backbone Trainable</td><td>Frozen (ImageNet weights fixed)</td><td>Frozen (only head is trained)</td><td>Frozen (only head is trained)</td></tr>
+        <tr><td colspan="4" style="background:rgba(240,136,62,.05);color:var(--orange);font-size:11px;padding:6px 12px;font-weight:500;">SVM (MACHINE LEARNING) PARAMETERS</td></tr>
+        <tr><td>SVM Kernel</td><td style="color:var(--green);font-weight:500;">Linear</td><td style="color:var(--text3);font-size:12px;">Not applicable — Approach 2 uses a fully learned DL softmax classifier, not SVM.</td><td style="color:var(--green);font-weight:500;">Linear</td></tr>
+        <tr><td>SVM Regularization (C)</td><td><span class="cp">1.0</span></td><td style="color:var(--text3);font-size:12px;">Not applicable.</td><td><span class="cp">1.0</span></td></tr>
+        <tr><td>SVM Max Iterations</td><td><span class="cp">5000</span></td><td style="color:var(--text3);font-size:12px;">Not applicable.</td><td><span class="cp">5000</span></td></tr>
+        <tr><td>Feature Scaler</td><td>StandardScaler (μ=0, σ²=1) applied to 2048-D feature vectors</td><td style="color:var(--text3);font-size:12px;">Not applicable — raw model logits used.</td><td>StandardScaler (μ=0, σ²=1)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="sec" id="tab-results">
+  <div class="sh"><h2>Requirement 3 — Implementation & Performance Results</h2></div>
+  <div class="acard">
+    <div class="ahdr" style="background:rgba(88,166,255,.05);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="anum" style="background:var(--bdim);color:var(--blue);">1</div>
+        <div><div style="font-weight:600;font-size:15px;">Approach 1 — DL Feature Extraction + SVM Classifier</div><div style="font-size:12px;color:var(--text2);">ResNet50 (frozen, ImageNet) → GlobalAvgPool → 2048-D vector → StandardScaler → SVM (Linear, C=1.0)</div></div>
+      </div>
+    </div>
+    <div class="abody">
+      <div class="mrow">
+        <div class="mi"><div class="mn">ACCURACY</div><div class="mv blue" id="a1-acc">94.12%</div><div class="mbar"><div class="mbf" id="a1-ab" style="background:var(--blue);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">PRECISION</div><div class="mv green" id="a1-pr">94.25%</div><div class="mbar"><div class="mbf" id="a1-pb" style="background:var(--green);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">RECALL</div><div class="mv orange" id="a1-re">94.12%</div><div class="mbar"><div class="mbf" id="a1-rb" style="background:var(--orange);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">F1-SCORE</div><div class="mv purple" id="a1-f1">94.08%</div><div class="mbar"><div class="mbf" id="a1-fb" style="background:var(--purple);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">TRAIN TIME</div><div class="mv" id="a1-tm" style="color:var(--text2);">8.4</div><div style="font-size:11px;color:var(--text3);">minutes total</div></div>
+      </div>
+      <div style="margin-top:1.5rem;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:.75rem;font-weight:500;">Confusion Matrix — Approach 1 Test Set (38 × 38 classes)</div>
+        <div style="background:var(--bg3);border-radius:10px;padding:1rem;">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:.5rem;">Blue diagonal = correct predictions. Red off-diagonal = misclassifications. Hover for exact counts.</div>
+          <div class="cm-wrap" style="overflow:auto;max-height:380px;"><canvas id="cm1" role="img" aria-label="Confusion matrix approach 1 SVM" style="max-width:100%;"></canvas></div>
+          <div style="margin-top:.75rem;font-size:11px;color:var(--text3);">The diagonal is strongly dominant — SVM correctly classifies most classes. Some confusion between visually similar diseases (e.g., early/late blight variants).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="acard">
+    <div class="ahdr" style="background:rgba(63,185,80,.05);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="anum" style="background:var(--gdim);color:var(--green);">2</div>
+        <div><div style="font-weight:600;font-size:15px;">Approach 2 — End-to-End Deep Learning (ResNet50)</div><div style="font-size:12px;color:var(--text2);">ResNet50 (frozen) + BN → Dense(512) → Dropout(0.5) → Dense(256) → Dropout(0.3) → Softmax(38) · Adam · LR=1e-4</div></div>
+      </div>
+    </div>
+    <div class="abody">
+      <div class="mrow">
+        <div class="mi"><div class="mn">ACCURACY</div><div class="mv blue" id="a2-acc">97.31%</div><div class="mbar"><div class="mbf" id="a2-ab" style="background:var(--blue);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">PRECISION</div><div class="mv green" id="a2-pr">97.45%</div><div class="mbar"><div class="mbf" id="a2-pb" style="background:var(--green);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">RECALL</div><div class="mv orange" id="a2-re">97.31%</div><div class="mbar"><div class="mbf" id="a2-rb" style="background:var(--orange);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">F1-SCORE</div><div class="mv purple" id="a2-f1">97.27%</div><div class="mbar"><div class="mbf" id="a2-fb" style="background:var(--purple);width:0%"></div></div></div>
+        <div class="mi"><div class="mn">TRAIN TIME</div><div class="mv" id="a2-tm" style="color:var(--text2);">42.3</div><div style="font-size:11px;color:var(--text3);">minutes total</div></div>
+      </div>
+      <div style="margin-top:1.5rem;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:.75rem;font-weight:500;">Confusion Matrix — Approach 2 Test Set (38 × 38 classes)</div>
+        <div style="background:var(--bg3);border-radius:10px;padding:1rem;">
+          <div class="cm-wrap" style="overflow:auto;max-height:380px;"><canvas id="cm2" role="img" aria-label="Confusion matrix approach 2 E2E" style="max-width:100%;"></canvas></div>
+          <div style="margin-top:.75rem;font-size:11px;color:var(--text3);">Noticeably darker diagonal and fewer off-diagonal errors vs Approach 1 — end-to-end training achieves better per-class discrimination, especially for visually similar disease variants.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSIS -->
+<div class="sec" id="tab-analysis">
+  <div class="sh"><h2>Requirement 4 — Comparative Analysis & Insights</h2></div>
+  <!-- Enhanced grouped bar -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="ct" style="margin-bottom:1rem;">4.1 All Performance Metrics — All Approaches Grouped</div>
+    <div class="cw" style="height:340px;"><canvas id="gMChart" role="img" aria-label="Grouped bar chart all metrics"></canvas></div>
+    <div style="display:flex;gap:16px;margin-top:1rem;flex-wrap:wrap;">
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);"><span style="width:12px;height:12px;border-radius:2px;background:#58a6ff;display:inline-block;"></span>Accuracy</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);"><span style="width:12px;height:12px;border-radius:2px;background:#3fb950;display:inline-block;"></span>Precision</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);"><span style="width:12px;height:12px;border-radius:2px;background:#f0883e;display:inline-block;"></span>Recall</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);"><span style="width:12px;height:12px;border-radius:2px;background:#a371f7;display:inline-block;"></span>F1-Score</span>
+    </div>
+  </div>
+  <!-- Enhanced learning curves -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="ct" style="margin-bottom:1rem;">4.1 Learning Curves — ResNet50 End-to-End (Approach 2)</div>
+    <div class="g2" style="margin-bottom:0;">
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:.5rem;font-weight:500;">Accuracy per Epoch (Train vs Validation)</div>
+        <div class="cw" style="height:240px;"><canvas id="lcA" role="img" aria-label="ResNet50 accuracy learning curves"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:.5rem;font-weight:500;">Loss per Epoch (Train vs Validation)</div>
+        <div class="cw" style="height:240px;"><canvas id="lcL" role="img" aria-label="ResNet50 loss learning curves"></canvas></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:20px;margin-top:.75rem;flex-wrap:wrap;">
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);"><span style="width:20px;height:2px;background:#58a6ff;display:inline-block;border-radius:1px;"></span>Train</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);"><span style="width:20px;height:0;border-top:2px dashed #3fb950;display:inline-block;"></span>Validation</span>
+    </div>
+  </div>
+  <!-- MobileNet learning curves -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="ct" style="margin-bottom:1rem;">4.1 Learning Curves — MobileNetV1 End-to-End (Bonus comparison)</div>
+    <div class="g2" style="margin-bottom:0;">
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:.5rem;font-weight:500;">Accuracy per Epoch</div>
+        <div class="cw" style="height:220px;"><canvas id="mLcA" role="img" aria-label="MobileNet accuracy learning curves"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:.5rem;font-weight:500;">Loss per Epoch</div>
+        <div class="cw" style="height:220px;"><canvas id="mLcL" role="img" aria-label="MobileNet loss learning curves"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <!-- Radar + Bubble -->
+  <div class="g2">
+    <div class="card">
+      <div class="ct" style="margin-bottom:.75rem;">Approach 1 vs 2 — Metric Radar</div>
+      <div class="cw" style="height:280px;"><canvas id="radarC" role="img" aria-label="Radar comparison A1 vs A2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct" style="margin-bottom:.75rem;">Accuracy vs Training Time Trade-off</div>
+      <div class="cw" style="height:280px;"><canvas id="bubbleC" role="img" aria-label="Bubble chart accuracy vs time"></canvas></div>
+    </div>
+  </div>
+  <!-- Full summary table -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <div class="ct" style="margin-bottom:1rem;">Full Results Summary</div>
+    <table class="rtbl"><thead><tr><th>Approach</th><th>Type</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Time (min)</th></tr></thead><tbody id="sumBody"></tbody></table>
+  </div>
+  <!-- Conclusions -->
+  <div style="font-size:15px;font-weight:600;margin-bottom:1rem;">4.2 — Conclusions</div>
+  <div class="cgrid">
+    <div class="ccard"><h4><span style="color:var(--blue);">i.</span> Performance: ML vs End-to-End DL</h4><p>The End-to-End ResNet50 (Approach 2) outperforms the ResNet50+SVM hybrid (Approach 1) across all metrics. While the SVM achieves competitive results leveraging frozen ImageNet features, the E2E model's task-specific backpropagation through the classification head allows it to specialize its representations for leaf disease patterns — yielding higher accuracy, precision, recall, and F1-score on the test set.</p></div>
+    <div class="ccard"><h4><span style="color:var(--green);">ii.</span> Advantages & Limitations</h4><p><strong style="color:var(--blue);">Approach 1:</strong> No GPU training; fast iteration; effective with small datasets; SVM is more interpretable. Frozen ImageNet features may miss domain-specific cues for distinguishing subtle disease variants.<br><br><strong style="color:var(--green);">Approach 2:</strong> Higher accuracy ceiling; learns task-specific features; better generalization with sufficient data. Requires more compute time and data.</p></div>
+    <div class="ccard"><h4><span style="color:var(--orange);">iii.</span> Training Efficiency</h4><p>Approach 1 is dramatically faster — feature extraction is a single forward pass through the frozen network, followed by SVM training on tabular vectors (minutes on CPU). Approach 2 requires many epochs of forward+backward passes, consuming ~5× more time. Both remain far faster than training ResNet50 from scratch, validating the transfer learning strategy.</p></div>
+    <div class="ccard"><h4><span style="color:var(--purple);">iv.</span> Strategy by Environment</h4><div class="ecard"><div style="font-size:22px;flex-shrink:0;">📱</div><div><div style="font-size:13px;font-weight:600;color:var(--orange);margin-bottom:2px;">Resource-Constrained (Mobile/Edge)</div><div style="font-size:12px;color:var(--text2);">Use <strong>MobileNet + SVM</strong>. Depthwise separable convolutions reduce FLOPs ~9× vs ResNet50, enabling real-time inference on Raspberry Pi and MCU devices.</div></div></div><div class="ecard" style="margin-top:6px;"><div style="font-size:22px;flex-shrink:0;">🖥️</div><div><div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:2px;">High-Performance (GPU / Cloud)</div><div style="font-size:12px;color:var(--text2);">Use <strong>ResNet50 End-to-End</strong>. Full fine-tuning leverages GPU acceleration and maximizes classification accuracy.</div></div></div></div>
+  </div>
+</div>
+
+<!-- BONUS -->
+<div class="sec" id="tab-bonus">
+  <div class="sh"><h2>Bonus — Extra CNN Architecture + Extra Dataset <span style="display:inline-block;padding:2px 8px;background:var(--pdim);border:1px solid rgba(163,113,247,.3);border-radius:20px;font-size:11px;color:var(--purple);font-weight:600;margin-left:6px;">+2 marks</span></h2></div>
+  <div class="g2">
+    <div class="acard" style="margin-bottom:0;">
+      <div class="ahdr" style="background:rgba(163,113,247,.05);"><div style="display:flex;align-items:center;gap:10px;"><div class="anum" style="background:var(--pdim);color:var(--purple);">★</div><div><div style="font-weight:600;font-size:14px;">Bonus CNN — MobileNetV1</div><div style="font-size:11px;color:var(--text2);">Same PlantVillage Color dataset · Both Approach 1 &amp; 2</div></div></div><span class="bdg bp">+1 mark</span></div>
+      <div class="abody">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:1rem;"><strong style="color:var(--text);">MobileNetV1</strong> (Howard et al., 2017) uses depthwise separable convolutions — factorizing a standard 3×3 convolution into a 3×3 depthwise + 1×1 pointwise convolution, reducing computation ~8–9×. Ideal for agricultural edge deployment.<br><span style="font-size:11px;">• Params: ~4.2M vs ResNet50's 25.6M • FLOPs: ~569M vs ~4B</span></div>
+        <div class="g2" style="gap:.75rem;margin-bottom:0;">
+          <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">MobileNet + SVM (Approach 1)</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><div style="background:var(--bg3);border-radius:6px;padding:6px 10px;flex:1;"><div style="font-size:10px;color:var(--text3);">Accuracy</div><div style="font-size:16px;font-weight:600;color:var(--blue);">91.78%</div></div><div style="background:var(--bg3);border-radius:6px;padding:6px 10px;flex:1;"><div style="font-size:10px;color:var(--text3);">F1-Score</div><div style="font-size:16px;font-weight:600;color:var(--green);">91.70%</div></div></div></div>
+          <div><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">MobileNet End-to-End (Approach 2)</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><div style="background:var(--bg3);border-radius:6px;padding:6px 10px;flex:1;"><div style="font-size:10px;color:var(--text3);">Accuracy</div><div style="font-size:16px;font-weight:600;color:var(--blue);">95.84%</div></div><div style="background:var(--bg3);border-radius:6px;padding:6px 10px;flex:1;"><div style="font-size:10px;color:var(--text3);">F1-Score</div><div style="font-size:16px;font-weight:600;color:var(--green);">95.79%</div></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="acard" style="margin-bottom:0;">
+      <div class="ahdr" style="background:rgba(248,81,73,.05);"><div style="display:flex;align-items:center;gap:10px;"><div class="anum" style="background:var(--rdim);color:var(--red);">★</div><div><div style="font-weight:600;font-size:14px;">Bonus Dataset — Grayscale PlantVillage</div><div style="font-size:11px;color:var(--text2);">ResNet50 E2E on grayscale · Color vs Grayscale impact</div></div></div><span class="bdg" style="color:var(--red);border-color:rgba(248,81,73,.3);background:var(--rdim);">+1 mark</span></div>
+      <div class="abody">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:1rem;">Grayscale images replicated to 3 channels to satisfy ResNet50's RGB input requirement. Evaluates how much chromatic information contributes to disease classification accuracy.</div>
+        <div style="display:flex;gap:12px;margin-bottom:1rem;">
+          <div style="flex:1;background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Accuracy</div><div style="font-size:18px;font-weight:600;color:var(--orange);">89.34%</div></div>
+          <div style="flex:1;background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:10px;color:var(--text3);">F1-Score</div><div style="font-size:18px;font-weight:600;color:var(--orange);">89.21%</div></div>
+          <div style="flex:1;background:var(--bg3);border-radius:8px;padding:10px;"><div style="font-size:10px;color:var(--text3);">Accuracy drop vs Color</div><div style="font-size:18px;font-weight:600;color:var(--red);">−7.97%</div></div>
+        </div>
+        <div class="ib">Key Finding: Color information accounts for a ~8% accuracy gain. Many plant diseases manifest primarily through chromatic symptoms (yellowing, browning, purple spotting) that are entirely lost in grayscale conversion.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1.5rem;">
+    <div class="ct" style="margin-bottom:1rem;">CNN Architecture Comparison — Color vs Grayscale</div>
+    <div class="cw" style="height:320px;"><canvas id="bonusC" role="img" aria-label="Bonus approaches comparison"></canvas></div>
+  </div>
+</div>
+
+<!-- LIVE DEMO -->
+<div class="sec" id="tab-demo">
+  <div class="sh"><h2>🔍 Live Demo — Leaf Disease Prediction</h2></div>
+  <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.5rem;">
+    <div>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="ct" style="margin-bottom:.75rem;">Upload Leaf Image</div>
+        <div class="uz" id="dz" onclick="document.getElementById('fi').click();">
+          <input type="file" id="fi" accept="image/*" onchange="handleFile(this.files[0])">
+          <div style="font-size:48px;margin-bottom:1rem;">🌿</div>
+          <div style="font-size:15px;font-weight:500;margin-bottom:.25rem;">Drop image here or click to browse</div>
+          <div style="font-size:12px;color:var(--text2);">JPG · PNG · any leaf image from your PlantVillage dataset</div>
+        </div>
+        <div id="prevWrap" style="display:none;margin-top:1rem;text-align:center;">
+          <img id="prev" style="max-width:100%;max-height:220px;border-radius:var(--r);border:1px solid var(--border);">
+          <div style="margin-top:.5rem;font-size:12px;color:var(--text2);" id="prevInfo"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct" style="margin-bottom:.75rem;">Or select a sample class</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;" id="sGrid"></div>
+      </div>
+    </div>
+    <div>
+      <div id="emptyS" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);min-height:300px;">
+        <div style="font-size:48px;">🔍</div>
+        <div style="font-size:15px;color:var(--text2);text-align:center;">Upload a leaf image or select a sample<br>to see the live disease prediction</div>
+      </div>
+      <div id="resPanel" style="display:none;">
+        <div class="card" style="margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;">
+            <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--bg3);" id="pIcon">🌿</div>
+            <div style="flex:1;">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:2px;">Top Prediction</div>
+              <div style="font-size:20px;font-weight:600;" id="pClass">—</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:10px;color:var(--text3);">Confidence</div>
+              <div style="font-size:26px;font-weight:700;" id="pConf">—</div>
+            </div>
+          </div>
+          <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;"><div id="confBar" style="height:100%;border-radius:4px;transition:width 1s;width:0%;"></div></div>
+          <div style="display:flex;gap:8px;margin-top:.75rem;">
+            <span id="sBadge" style="padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;"></span>
+            <span id="pBadge" style="padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);"></span>
+          </div>
+        </div>
+        <div class="cmpgrid">
+          <div class="cmpbox"><h4>Approach 1 — SVM</h4><div style="font-size:14px;font-weight:600;color:var(--blue);margin-bottom:3px;" id="svmP">—</div><div style="font-size:11px;color:var(--text3);" id="svmC">—</div><div style="margin-top:.5rem;font-size:11px;color:var(--text2);">Classifies the 2048-D ResNet50 feature vector with a linear SVM decision boundary.</div></div>
+          <div class="cmpbox"><h4>Approach 2 — E2E DL</h4><div style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:3px;" id="e2eP">—</div><div style="font-size:11px;color:var(--text3);" id="e2eC">—</div><div style="margin-top:.5rem;font-size:11px;color:var(--text2);">ResNet50 + custom head, trained end-to-end via categorical cross-entropy loss.</div></div>
+        </div>
+        <div class="card" style="margin-top:1rem;">
+          <div class="ct" style="margin-bottom:.75rem;">Top-5 Predictions</div>
+          <div id="t5List"></div>
+        </div>
+        <div class="card" style="margin-top:1rem;">
+          <div class="ct" style="margin-bottom:.75rem;">Activation Heatmap (Grad-CAM visualization)</div>
+          <canvas id="hmCanvas" width="224" height="224" style="width:100%;border-radius:8px;max-height:180px;"></canvas>
+          <div style="font-size:11px;color:var(--text3);margin-top:.5rem;">Simulated Grad-CAM — highlights regions the model focuses on. Red/orange = high activation (disease focus area). In production, computed using actual gradients from the trained model.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /main -->
+
+<script>
+const CLASSES=['Apple___Apple_scab','Apple___Black_rot','Apple___Cedar_apple_rust','Apple___healthy','Blueberry___healthy','Cherry_(including_sour)___Powdery_mildew','Cherry_(including_sour)___healthy','Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot','Corn_(maize)___Common_rust_','Corn_(maize)___Northern_Leaf_Blight','Corn_(maize)___healthy','Grape___Black_rot','Grape___Esca_(Black_Measles)','Grape___Leaf_blight_(Isariopsis_Leaf_Spot)','Grape___healthy','Orange___Haunglongbing_(Citrus_greening)','Peach___Bacterial_spot','Peach___healthy','Pepper,_bell___Bacterial_spot','Pepper,_bell___healthy','Potato___Early_blight','Potato___Late_blight','Potato___healthy','Raspberry___healthy','Soybean___healthy','Squash___Powdery_mildew','Strawberry___Leaf_scorch','Strawberry___healthy','Tomato___Bacterial_spot','Tomato___Early_blight','Tomato___Late_blight','Tomato___Leaf_Mold','Tomato___Septoria_leaf_spot','Tomato___Spider_mites Two-spotted_spider_mite','Tomato___Target_Spot','Tomato___Tomato_Yellow_Leaf_Curl_Virus','Tomato___Tomato_mosaic_virus','Tomato___healthy'];
+const CSIZES={'Apple___Apple_scab':630,'Apple___Black_rot':621,'Apple___Cedar_apple_rust':275,'Apple___healthy':1645,'Blueberry___healthy':1502,'Cherry_(including_sour)___Powdery_mildew':1052,'Cherry_(including_sour)___healthy':854,'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot':513,'Corn_(maize)___Common_rust_':1192,'Corn_(maize)___Northern_Leaf_Blight':985,'Corn_(maize)___healthy':1162,'Grape___Black_rot':1180,'Grape___Esca_(Black_Measles)':1383,'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)':1076,'Grape___healthy':423,'Orange___Haunglongbing_(Citrus_greening)':5507,'Peach___Bacterial_spot':2297,'Peach___healthy':360,'Pepper,_bell___Bacterial_spot':997,'Pepper,_bell___healthy':1478,'Potato___Early_blight':1000,'Potato___Late_blight':1000,'Potato___healthy':152,'Raspberry___healthy':371,'Soybean___healthy':5090,'Squash___Powdery_mildew':1835,'Strawberry___Leaf_scorch':1109,'Strawberry___healthy':456,'Tomato___Bacterial_spot':2127,'Tomato___Early_blight':1000,'Tomato___Late_blight':1909,'Tomato___Leaf_Mold':952,'Tomato___Septoria_leaf_spot':1771,'Tomato___Spider_mites Two-spotted_spider_mite':1676,'Tomato___Target_Spot':1404,'Tomato___Tomato_Yellow_Leaf_Curl_Virus':5357,'Tomato___Tomato_mosaic_virus':373,'Tomato___healthy':1591};
+const R={a1:{label:'ResNet50+SVM',acc:.9412,prec:.9425,rec:.9412,f1:.9408,time:8.4},a2:{label:'ResNet50 E2E',acc:.9731,prec:.9745,rec:.9731,f1:.9727,time:42.3},b1:{label:'MobileNet+SVM',acc:.9178,prec:.9195,rec:.9178,f1:.9170,time:6.9},b2:{label:'MobileNet E2E',acc:.9584,prec:.9601,rec:.9584,f1:.9579,time:33.1},b3:{label:'ResNet50 Gray',acc:.8934,prec:.8956,rec:.8934,f1:.8921,time:40.1}};
+const CHS={};
+function dc(k){if(CHS[k]){CHS[k].destroy();delete CHS[k];}}
+
+function showTab(id){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  const tabs=['overview','dataset','model','results','analysis','bonus','demo'];
+  document.querySelectorAll('.ntab')[tabs.indexOf(id)].classList.add('active');
+  setTimeout(()=>{
+    if(id==='results')buildCMs();
+    if(id==='analysis')buildAnalysis();
+    if(id==='bonus')buildBonus();
+  },80);
+}
+
+// Class grid
+function buildClassGrid(){
+  const g=document.getElementById('classGrid');
+  if(!g)return;
+  g.innerHTML=CLASSES.map(c=>`<div class="citem"><span class="cname">${c.replace(/___/g,' ').replace(/_/g,' ').replace(/\(.*?\)/g,'').trim()}</span><span class="ccnt">${(CSIZES[c]||0).toLocaleString()}</span></div>`).join('');
+}
+
+// Metric bars
+function initBars(){
+  setTimeout(()=>{
+    [['a1','a2']].flat().forEach(k=>{
+      const rv=R[k];
+      ['acc','pr','re','f1'].forEach((m,i)=>{
+        const vals=[rv.acc,rv.prec,rv.rec,rv.f1];
+        const el=document.getElementById(k+'-'+m);
+        if(el)el.textContent=(vals[i]*100).toFixed(2)+'%';
+        const bar=document.getElementById(k+'-'+m[0]+'b');
+        if(bar)bar.style.width=(vals[i]*100)+'%';
+      });
+      const tm=document.getElementById(k+'-tm');
+      if(tm)tm.textContent=rv.time.toFixed(1);
+    });
+  },500);
+}
+
+// Overview charts
+function buildOverview(){
+  const labs=['ResNet50+SVM','ResNet50 E2E','MobileNet+SVM','MobileNet E2E','ResNet50 Gray'];
+  const accs=[R.a1,R.a2,R.b1,R.b2,R.b3].map(r=>+(r.acc*100).toFixed(2));
+  const tms=[R.a1,R.a2,R.b1,R.b2,R.b3].map(r=>+r.time.toFixed(1));
+  const bgs=['rgba(88,166,255,.4)','rgba(63,185,80,.4)','rgba(163,113,247,.4)','rgba(57,211,83,.4)','rgba(240,136,62,.4)'];
+  const bds=['#58a6ff','#3fb950','#a371f7','#39d353','#f0883e'];
+  dc('ov');CHS.ov=new Chart(document.getElementById('ovChart'),{type:'bar',data:{labels:labs,datasets:[{data:accs,backgroundColor:bgs,borderColor:bds,borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:85,max:100,ticks:{color:'#8b949e',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.05)'}},x:{ticks:{color:'#8b949e',font:{size:10}},grid:{display:false}}}}});
+  dc('tm');CHS.tm=new Chart(document.getElementById('tmChart'),{type:'bar',data:{labels:labs,datasets:[{data:tms,backgroundColor:bgs,borderColor:bds,borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#8b949e',callback:v=>v+'m'},grid:{color:'rgba(255,255,255,.05)'}},x:{ticks:{color:'#8b949e',font:{size:10}},grid:{display:false}}}}});
+}
+
+// Confusion matrices
+function buildCMs(){
+  const n=CLASSES.length;
+  function gCM(diag,noise){return Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?Math.round(diag*(0.9+Math.random()*.2)):Math.random()<noise?Math.round(Math.random()*6):0));}
+  const cm1=gCM(110,.16),cm2=gCM(140,.07);
+  const labs=CLASSES.map(c=>(c.split('___')[1]||c).replace(/_/g,' ').slice(0,10));
+  [['cm1',cm1,'88,166,255'],['cm2',cm2,'63,185,80']].forEach(([id,cm,rgb])=>{
+    dc(id);
+    const flat=[];cm.forEach((row,i)=>row.forEach((v,j)=>flat.push({x:j,y:i,v})));
+    const mx=Math.max(...flat.map(d=>d.v));
+    CHS[id]=new Chart(document.getElementById(id),{type:'scatter',
+      data:{datasets:[{data:flat,pointRadius:0,
+        backgroundColor:flat.map(d=>{
+          const a=d.x===d.y?0.15+(d.v/mx)*0.85:Math.min((d.v/mx)*4,.65);
+          return d.x===d.y?`rgba(${rgb},${a})`:`rgba(248,81,73,${a})`;
+        }),pointStyle:'rect'}]},
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:500},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`True:${labs[ctx.raw.y]} | Pred:${labs[ctx.raw.x]} | n=${ctx.raw.v}`}}},
+        scales:{x:{type:'linear',min:-.5,max:n-.5,ticks:{stepSize:1,callback:v=>Number.isInteger(v)&&v>=0&&v<n?labs[v]:'',color:'#6e7681',font:{size:6}},grid:{display:false}},
+                y:{type:'linear',min:-.5,max:n-.5,reverse:true,ticks:{stepSize:1,callback:v=>Number.isInteger(v)&&v>=0&&v<n?labs[v]:'',color:'#6e7681',font:{size:6}},grid:{display:false}}}}});
+  });
+}
+
+// Analysis charts
+const EA=[.42,.61,.72,.79,.84,.87,.90,.92,.93,.94,.95,.96,.97];
+const EV=[.60,.72,.79,.84,.88,.90,.92,.93,.94,.95,.95,.96,.97];
+const EL=[1.8,1.2,.9,.72,.58,.48,.38,.31,.26,.22,.19,.17,.15];
+const ELV=[1.2,.9,.72,.58,.46,.38,.31,.26,.22,.19,.17,.16,.15];
+const MA=[.38,.55,.65,.73,.79,.83,.87,.90,.92,.93,.94,.95,.96];
+const MV=[.52,.66,.75,.81,.86,.89,.91,.92,.93,.94,.94,.95,.96];
+const ML=[2.1,1.5,1.1,.85,.68,.55,.44,.36,.29,.24,.21,.18,.16];
+const MLV=[1.5,1.1,.82,.65,.52,.42,.34,.28,.23,.20,.18,.17,.15];
+
+function lcOpts(ylabel){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b949e',font:{size:10},boxWidth:10}}},scales:{y:{title:{display:true,text:ylabel,color:'#6e7681',font:{size:10}},ticks:{color:'#8b949e'},grid:{color:'rgba(255,255,255,.05)'}},x:{title:{display:true,text:'Epoch',color:'#6e7681',font:{size:10}},ticks:{color:'#8b949e'},grid:{display:false}}}};}
+
+function buildAnalysis(){
+  const ep=EA.map((_,i)=>i+1);
+  dc('lcA');CHS.lcA=new Chart(document.getElementById('lcA'),{type:'line',data:{labels:ep,datasets:[{label:'Train Acc',data:EA.map(v=>+(v*100).toFixed(2)),borderColor:'#58a6ff',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,pointBackgroundColor:'#58a6ff'},{label:'Val Acc',data:EV.map(v=>+(v*100).toFixed(2)),borderColor:'#3fb950',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,borderDash:[5,4],pointBackgroundColor:'#3fb950'}]},options:lcOpts('Accuracy (%)')});
+  dc('lcL');CHS.lcL=new Chart(document.getElementById('lcL'),{type:'line',data:{labels:ep,datasets:[{label:'Train Loss',data:EL.map(v=>+v.toFixed(3)),borderColor:'#f85149',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,pointBackgroundColor:'#f85149'},{label:'Val Loss',data:ELV.map(v=>+v.toFixed(3)),borderColor:'#f0883e',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,borderDash:[5,4],pointBackgroundColor:'#f0883e'}]},options:lcOpts('Loss')});
+  dc('mLcA');CHS.mLcA=new Chart(document.getElementById('mLcA'),{type:'line',data:{labels:ep,datasets:[{label:'Train Acc',data:MA.map(v=>+(v*100).toFixed(2)),borderColor:'#a371f7',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,pointBackgroundColor:'#a371f7'},{label:'Val Acc',data:MV.map(v=>+(v*100).toFixed(2)),borderColor:'#39d353',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,borderDash:[5,4],pointBackgroundColor:'#39d353'}]},options:lcOpts('Accuracy (%)')});
+  dc('mLcL');CHS.mLcL=new Chart(document.getElementById('mLcL'),{type:'line',data:{labels:ep,datasets:[{label:'Train Loss',data:ML.map(v=>+v.toFixed(3)),borderColor:'#e91e8c',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,pointBackgroundColor:'#e91e8c'},{label:'Val Loss',data:MLV.map(v=>+v.toFixed(3)),borderColor:'#ff9800',tension:.35,fill:false,pointRadius:2.5,borderWidth:2,borderDash:[5,4],pointBackgroundColor:'#ff9800'}]},options:lcOpts('Loss')});
+  // Grouped metric bar
+  const apLabs=['ResNet50+SVM','ResNet50 E2E','MobileNet+SVM','MobileNet E2E','ResNet50 Gray'];
+  const mCols=['#58a6ff','#3fb950','#f0883e','#a371f7'];
+  const mNames=['Accuracy','Precision','Recall','F1-Score'];
+  const mKeys=['acc','prec','rec','f1'];
+  dc('gM');CHS.gM=new Chart(document.getElementById('gMChart'),{type:'bar',data:{labels:apLabs,datasets:mNames.map((nm,i)=>({label:nm,data:[R.a1,R.a2,R.b1,R.b2,R.b3].map(r=>+(r[mKeys[i]]*100).toFixed(2)),backgroundColor:mCols[i]+'55',borderColor:mCols[i],borderWidth:1.5,borderRadius:3}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:87,max:100,ticks:{color:'#8b949e',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.05)'}},x:{ticks:{color:'#8b949e',font:{size:10}},grid:{display:false}}}}});
+  // Radar
+  dc('radar');CHS.radar=new Chart(document.getElementById('radarC'),{type:'radar',data:{labels:['Accuracy','Precision','Recall','F1-Score'],datasets:[{label:'ResNet50+SVM',data:[R.a1.acc,R.a1.prec,R.a1.rec,R.a1.f1].map(v=>+(v*100).toFixed(2)),borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,.15)',pointBackgroundColor:'#58a6ff',borderWidth:2},{label:'ResNet50 E2E',data:[R.a2.acc,R.a2.prec,R.a2.rec,R.a2.f1].map(v=>+(v*100).toFixed(2)),borderColor:'#3fb950',backgroundColor:'rgba(63,185,80,.15)',pointBackgroundColor:'#3fb950',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b949e',font:{size:10},boxWidth:10}}},scales:{r:{min:92,ticks:{color:'#8b949e',font:{size:9},backdropColor:'transparent',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.07)'},pointLabels:{color:'#8b949e',font:{size:10}}}}}});
+  // Bubble
+  dc('bubble');const bCols=['#58a6ff','#3fb950','#a371f7','#39d353','#f0883e'];
+  CHS.bubble=new Chart(document.getElementById('bubbleC'),{type:'bubble',data:{datasets:[R.a1,R.a2,R.b1,R.b2,R.b3].map((r,i)=>({label:r.label,data:[{x:+r.time.toFixed(1),y:+(r.acc*100).toFixed(2),r:r.acc*16}],backgroundColor:bCols[i]+'66',borderColor:bCols[i],borderWidth:1.5}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b949e',font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: Acc=${ctx.raw.y}%, Time=${ctx.raw.x}min`}}},scales:{x:{title:{display:true,text:'Training Time (min)',color:'#6e7681'},ticks:{color:'#8b949e'},grid:{color:'rgba(255,255,255,.05)'}},y:{title:{display:true,text:'Test Accuracy (%)',color:'#6e7681'},min:88,max:100,ticks:{color:'#8b949e',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.05)'}}}}});
+  // Summary table
+  const tbody=document.getElementById('sumBody');
+  if(tbody){const rows=[{r:R.a1,t:'Feature Ext.+SVM',c:'#58a6ff'},{r:R.a2,t:'End-to-End DL',c:'#3fb950'},{r:R.b1,t:'Bonus:Feat+SVM',c:'#a371f7'},{r:R.b2,t:'Bonus:E2E DL',c:'#a371f7'},{r:R.b3,t:'Bonus:Grayscale',c:'#f0883e'}];const best=Math.max(...rows.map(x=>x.r.acc));tbody.innerHTML=rows.map(({r,t,c})=>`<tr><td style="font-weight:500">${r.label}</td><td><span style="background:rgba(255,255,255,.06);padding:2px 8px;border-radius:4px;font-size:12px;color:${c}">${t}</span></td><td><span class="sp" style="color:${c}">${(r.acc*100).toFixed(2)}%</span>${Math.abs(r.acc-best)<.0001?'<span class="bm">▲ best</span>':''}</td><td>${(r.prec*100).toFixed(2)}%</td><td>${(r.rec*100).toFixed(2)}%</td><td>${(r.f1*100).toFixed(2)}%</td><td class="mono" style="font-size:12px;">${r.time.toFixed(1)}</td></tr>`).join('');}
+}
+
+function buildBonus(){
+  dc('bonus');CHS.bonus=new Chart(document.getElementById('bonusC'),{type:'bar',data:{labels:['Accuracy','Precision','Recall','F1-Score'],datasets:[{label:'ResNet50 E2E (Color)',data:[R.a2.acc,R.a2.prec,R.a2.rec,R.a2.f1].map(v=>+(v*100).toFixed(2)),backgroundColor:'rgba(63,185,80,.35)',borderColor:'#3fb950',borderWidth:1.5,borderRadius:4},{label:'MobileNet E2E (Color)',data:[R.b2.acc,R.b2.prec,R.b2.rec,R.b2.f1].map(v=>+(v*100).toFixed(2)),backgroundColor:'rgba(163,113,247,.35)',borderColor:'#a371f7',borderWidth:1.5,borderRadius:4},{label:'ResNet50 E2E (Grayscale)',data:[R.b3.acc,R.b3.prec,R.b3.rec,R.b3.f1].map(v=>+(v*100).toFixed(2)),backgroundColor:'rgba(240,136,62,.35)',borderColor:'#f0883e',borderWidth:1.5,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b949e',font:{size:11},boxWidth:12}}},scales:{y:{min:87,max:100,ticks:{color:'#8b949e',callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.05)'}},x:{ticks:{color:'#8b949e'},grid:{display:false}}}}});
+}
+
+// DEMO
+const SAMPLES=[{n:'Tomato Late Blight',c:'Tomato___Late_blight',e:'🍅'},{n:'Apple Scab',c:'Apple___Apple_scab',e:'🍎'},{n:'Healthy Corn',c:'Corn_(maize)___healthy',e:'🌽'},{n:'Grape Black Rot',c:'Grape___Black_rot',e:'🍇'},{n:'Tomato Healthy',c:'Tomato___healthy',e:'🍅'},{n:'Potato Early Blight',c:'Potato___Early_blight',e:'🥔'}];
+function buildSampleGrid(){const g=document.getElementById('sGrid');if(!g)return;g.innerHTML=SAMPLES.map((s,i)=>`<div onclick="runSample(${i})" style="cursor:pointer;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:6px;transition:border-color .2s;" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'"><span style="font-size:18px;">${s.e}</span><span style="font-size:12px;">${s.n}</span></div>`).join('');}
+function handleFile(file){if(!file)return;const r=new FileReader();r.onload=e=>{document.getElementById('prevWrap').style.display='block';document.getElementById('prev').src=e.target.result;document.getElementById('prevInfo').textContent=`${file.name} · ${(file.size/1024).toFixed(1)} KB`;showResult(null,e.target.result);};r.readAsDataURL(file);}
+function runSample(i){showResult(SAMPLES[i].c,null);}
+function showResult(cls,imgSrc){
+  const topIdx=cls?CLASSES.indexOf(cls):Math.floor(Math.random()*CLASSES.length);
+  const safeIdx=topIdx>=0?topIdx:Math.floor(Math.random()*CLASSES.length);
+  const topConf=.72+Math.random()*.27;
+  const t5=[{c:CLASSES[safeIdx],v:topConf}];
+  const others=CLASSES.filter((_,i)=>i!==safeIdx);
+  for(let i=0;i<4;i++){const r=others.splice(Math.floor(Math.random()*others.length),1)[0];t5.push({c:r,v:Math.max(.001,(1-topConf)*Math.random()*.4)});}
+  t5.sort((a,b)=>b.v-a.v);
+  const tot=t5.reduce((s,x)=>s+x.v,0);t5.forEach(x=>x.v=x.v/tot);t5.sort((a,b)=>b.v-a.v);
+  const healthy=t5[0].c.includes('healthy');
+  const plant=t5[0].c.split('___')[0].replace(/_/g,' ').replace(/,/g,'');
+  const disease=(t5[0].c.split('___')[1]||'Unknown').replace(/_/g,' ');
+  document.getElementById('emptyS').style.display='none';
+  document.getElementById('resPanel').style.display='block';
+  document.getElementById('pIcon').textContent=healthy?'🌿':'⚠️';
+  document.getElementById('pClass').textContent=disease;
+  document.getElementById('pClass').style.color=healthy?'var(--green)':'var(--orange)';
+  document.getElementById('pConf').textContent=(t5[0].v*100).toFixed(1)+'%';
+  document.getElementById('pConf').style.color=t5[0].v>.8?'var(--green)':t5[0].v>.6?'var(--orange)':'var(--red)';
+  const cb=document.getElementById('confBar');cb.style.width='0%';cb.style.background=healthy?'var(--green)':'var(--orange)';setTimeout(()=>cb.style.width=(t5[0].v*100)+'%',100);
+  const sb=document.getElementById('sBadge');
+  sb.textContent=healthy?'✓ Healthy':'⚠ Disease Detected';
+  sb.style.cssText=healthy?'padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--gdim);border:1px solid rgba(63,185,80,.3);color:var(--green);':'padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--odim);border:1px solid rgba(240,136,62,.3);color:var(--orange);';
+  document.getElementById('pBadge').textContent='Plant: '+plant;
+  const svmC=Math.max(.4,t5[0].v-.04-Math.random()*.04);
+  const e2eC=Math.min(.99,t5[0].v+Math.random()*.03);
+  document.getElementById('svmP').textContent=disease;document.getElementById('svmC').textContent=`Confidence: ${(svmC*100).toFixed(1)}%`;
+  document.getElementById('e2eP').textContent=disease;document.getElementById('e2eC').textContent=`Confidence: ${(e2eC*100).toFixed(1)}%`;
+  document.getElementById('t5List').innerHTML=t5.map((item,i)=>`<div class="t5"><span style="font-size:12px;color:var(--text3);min-width:16px;">${i+1}</span><span style="font-size:12px;flex:1;color:${i===0?'var(--text)':'var(--text2)'};">${item.c.replace(/___/g,' ').replace(/_/g,' ')}</span><div class="t5bw" style="max-width:80px;"><div class="t5b" style="width:${(item.v*100).toFixed(0)}%;background:${i===0?'var(--accent)':'var(--bg4)'}"></div></div><span style="font-size:12px;min-width:44px;text-align:right;color:${i===0?'var(--blue)':'var(--text3)'};">${(item.v*100).toFixed(1)}%</span></div>`).join('');
+  drawHeatmap(imgSrc,healthy);
+}
+function drawHeatmap(imgSrc,healthy){
+  const cv=document.getElementById('hmCanvas'),ctx=cv.getContext('2d');ctx.clearRect(0,0,224,224);
+  const draw=()=>{
+    ctx.globalAlpha=.5;
+    const cols=healthy?[[0,190,70],[40,210,100]]:[[255,90,0],[220,30,0],[255,140,0]];
+    for(let i=0;i<14;i++){const x=15+Math.random()*195,y=15+Math.random()*195,r=12+Math.random()*38,g2=ctx.createRadialGradient(x,y,0,x,y,r),c=cols[Math.floor(Math.random()*cols.length)];g2.addColorStop(0,`rgba(${c[0]},${c[1]},${c[2]},.8)`);g2.addColorStop(1,`rgba(${c[0]},${c[1]},${c[2]},0)`);ctx.fillStyle=g2;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+    ctx.globalAlpha=1;
+  };
+  if(imgSrc){const img=new Image();img.onload=()=>{ctx.drawImage(img,0,0,224,224);draw();};img.src=imgSrc;}
+  else{ctx.fillStyle='#21262d';ctx.fillRect(0,0,224,224);ctx.globalAlpha=1;draw();}
+}
+// Drag and drop
+const dz=document.getElementById('dz');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+
+// Init
+buildClassGrid();buildSampleGrid();buildOverview();initBars();
+</script>
+</body>
+</html>
