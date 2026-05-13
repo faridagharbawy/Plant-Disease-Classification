@@ -22,7 +22,6 @@ A comparative study between two deep learning paradigms for automated plant leaf
 | **Approach 1** | ResNet50 (frozen) → SVM | **98%** | ~8.4 min |
 | **Approach 2** | ResNet50 End-to-End DL | **98%** | ~42.3 min |
 | Bonus 1 | MobileNet + SVM | 96% | ~6.9 min |
-| Bonus 2 | MobileNet End-to-End | 96% | ~33.1 min |
 | Bonus 3 | ResNet50 on Grayscale | 89% | ~40.1 min |
 
 ---
@@ -32,7 +31,7 @@ A comparative study between two deep learning paradigms for automated plant leaf
 ```
 project/
 │
-├── CAI3105_PlantVillage_Project.ipynb   ← Main Jupyter notebook (run this)
+├── plant.ipynb   ← Main Jupyter notebook (run this)
 ├── dashboard.html                        ← Interactive results dashboard
 ├── README.md                             ← This file
 │
@@ -65,7 +64,7 @@ Expected folder structure after download:
 plantvillage dataset/
     ├── color/          ← used as main dataset
     ├── grayscale/      ← used for bonus comparison
-    └── segmented/      ← not used
+    └── segmented/      
 ```
 
 ---
@@ -89,7 +88,7 @@ pip install scikit-learn matplotlib seaborn pandas pillow tqdm jupyter
 
 ### Step 1 — Set dataset paths
 
-Open `CAI3105_PlantVillage_Project.ipynb` and update these 3 lines at the top:
+Open `plant.ipynb` and update these 3 lines at the top:
 
 ```python
 DATA_DIR_COLOR = r'C:\path\to\plantvillage dataset\color'
@@ -102,7 +101,7 @@ RESULTS_DIR    = r'C:\path\to\results'
 ### Step 2 — Run the notebook
 
 ```bash
-jupyter notebook CAI3105_PlantVillage_Project.ipynb
+jupyter notebook plant.ipynb
 ```
 
 Then: **Kernel → Restart & Run All**
@@ -194,14 +193,6 @@ After running the notebook, the `results/` folder will contain:
 
 ---
 
-## 📚 References
-
-1. He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep Residual Learning for Image Recognition. *CVPR*, pp. 770–778.
-2. Howard, A.G., et al. (2017). MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications. *arXiv:1704.04861*
-3. Mohanty, S.P., Hughes, D.P., & Salathe, M. (2016). Using Deep Learning for Image-Based Plant Disease Detection. *Frontiers in Plant Science*, 7, 1419.
-4. Ferentinos, K.P. (2018). Deep Learning Models for Plant Disease Detection and Diagnosis. *Computers and Electronics in Agriculture*, 145, 311–318.
-
----
 
 <div align="center">
   <sub>CAI3105 Deep Learning · Smart Village Campus · May 2026</sub>
